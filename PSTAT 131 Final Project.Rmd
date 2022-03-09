@@ -7,11 +7,11 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+# gitcreds_set()
 ```
 
 # Alcohol Consumption in Secondary Students
 ### By Sharon Nguyen, Matt Lee, Paul Song
-
 
 
 # Abstract
@@ -27,22 +27,143 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 # Loading Data and Packages
+```{r}
+library(gitcreds)
+library(dplyr)
+dat <- read.csv("student-por.csv")
+```
+
+
+# Variable Analysis
 
 
 
 # Data Cleaning
+```{r}
+dat <- dat %>%
+  select(traveltime, studytime, failures, higher, internet, famrel, freetime, 
+         goout, Dalc, Walc, health, absences, G3)
+
+# Pass
+dat <- dat %>% mutate(grade=factor(ifelse(G3/20 >= 0.7, 'Pass', 'No Pass'), 
+                                    levels = c('No Pass', 'Pass')))
+```
 
 
 # Data Split
+```{r}
+set.seed(7)
+num_samp <- 0.7 * nrow(student_por)
 
+# dat <- model.matrix(G3~., student_por)
+# 
+# train = sample(nrow(dat), num_samp)
+# x.train = dat[train, ]
+# y.train = student[train, ]$G3
+# 
+# # The rest as test data
+# x.test = dat[-train, ]
+# y.test = student[-train, ]$G3
+
+
+test.indices <- sample(nrow(dat), num_samp)
+train <- dat[-test.indices,]
+test <- dat[test.indices,]
+```
+
+# Exploratory Data Analysis
+```{r}
+library(reshape2)
+library(ggplot2)
+# correlation matrix
+cor_train <- train %>% mutate(grade=ifelse(G3/20 >= 0.7, 1, 0))
+
+cor_train <- cor_train %>% select(-higher, -internet, -G3)
+cormat <- round(cor(cor_train), 2)
+melted_cormat <- melt(cormat)
+ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_raster()
+
+# Get lower triangle of the correlation matrix
+get_lower_tri<-function(cormat){
+  cormat[upper.tri(cormat)] <- NA
+  return(cormat)
+}
+# Get upper triangle of the correlation matrix
+get_upper_tri <- function(cormat){
+  cormat[lower.tri(cormat)]<- NA
+  return(cormat)
+}
+
+upper_tri <- get_upper_tri(cormat)
+upper_tri
+
+# Melt the correlation matrix
+melted_cormat <- melt(upper_tri, na.rm = TRUE)
+
+# # Heatmap
+# ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
+#  geom_tile(color = "white")+
+#  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+#    midpoint = 0, limit = c(-1,1), space = "Lab", 
+#    name="Pearson\nCorrelation") +
+#   theme_minimal()+ 
+#  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+#     size = 12, hjust = 1))+
+#  coord_fixed()
+
+reorder_cormat <- function(cormat){
+# Use correlation between variables as distance
+dd <- as.dist((1-cormat)/2)
+hc <- hclust(dd)
+cormat <-cormat[hc$order, hc$order]
+}
+
+# Reorder the correlation matrix
+cormat <- reorder_cormat(cormat)
+upper_tri <- get_upper_tri(cormat)
+# Melt the correlation matrix
+melted_cormat <- melt(upper_tri, na.rm = TRUE)
+# Create a ggheatmap
+ggheatmap <- ggplot(melted_cormat, aes(Var2, Var1, fill = value))+
+ geom_tile(color = "white")+
+ scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+   midpoint = 0, limit = c(-1,1), space = "Lab", 
+    name="Pearson\nCorrelation") +
+  theme_minimal()+ # minimal theme
+ theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+    size = 12, hjust = 1))+
+ coord_fixed()
+# Print the heatmap
+print(ggheatmap)
+
+
+ggheatmap + 
+geom_text(aes(Var2, Var1, label = value), color = "black", size = 4) +
+theme(
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank(),
+  panel.grid.major = element_blank(),
+  panel.border = element_blank(),
+  panel.background = element_blank(),
+  axis.ticks = element_blank(),
+  legend.justification = c(1, 0),
+  legend.position = c(0.6, 0.7),
+  legend.direction = "horizontal")+
+  guides(fill = guide_colorbar(barwidth = 7, barheight = 1,
+                title.position = "top", title.hjust = 0.5))
+```
 
 
 # Analysis of the Test Set
 
 
+
 # Conclusion
 
 
+
+# Reference
 
 ## An Overview of Your Dataset
 
@@ -56,3 +177,5 @@ We are interested in predicting the number of times a student consumes alcohol e
 
 We believe that the question would be best answered with a regression approach. Of these 33 predictors, we find that final grade, free time, absences, family's education support, study time, parent cohabitation status, parent's education, number of failed classes, quality of family relationship, and going out with friends will be useful for our prediction.
 
+# Comments
+Predict G1, G2, and G3
