@@ -12,4 +12,47 @@ knitr::opts_chunk$set(echo = TRUE)
 # Alcohol Consumption in Secondary Students
 ### By Sharon Nguyen, Matt Lee, Paul Song
 
-## Introduction
+
+
+# Abstract
+
+
+
+# Introduction
+
+
+
+# Why might this model be useful?
+
+
+
+# Loading Data and Packages
+
+
+
+# Data Cleaning
+
+
+# Data Split
+
+
+
+# Analysis of the Test Set
+
+
+# Conclusion
+
+
+
+## An Overview of Your Dataset
+
+The data was obtained in a survey of students' math course in secondary school in Portugal. Called "Student Alcohol Consumption", the dataset can be found on kaggle at <https://www.kaggle.com/uciml/student-alcohol-consumption?select=student-mat.csv>. It includes social, gender, and study information about students. 
+
+In the dataset, we will be dealing with both qualitative and quantitative variables. It contains a total of 395 observations with 33 predictors, containing no missing data. 
+
+## An Overview of Your Research Question
+
+We are interested in predicting the number of times a student consumes alcohol every week. We want to figure out whether variables such as free time and parent's education status has an effect on the number of times a student drinks alcohol each week. Our response variable will be Dalc (Workday alcohol consumption) and Walc (Weekend alcohol consumption) added together to make Alc (Weekly alcohol consumption). 
+
+We believe that the question would be best answered with a regression approach. Of these 33 predictors, we find that final grade, free time, absences, family's education support, study time, parent cohabitation status, parent's education, number of failed classes, quality of family relationship, and going out with friends will be useful for our prediction.
+
