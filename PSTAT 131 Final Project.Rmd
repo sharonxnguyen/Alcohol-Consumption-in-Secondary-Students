@@ -1,0 +1,15 @@
+---
+title: 'PSTAT 131: Final Project'
+author: "Sharon Nguyen, Matt Lee, Paul Song"
+date: "3/8/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Alcohol Consumption in Secondary Students
+### By Sharon Nguyen, Matt Lee, Paul Song
+
+## Introduction
