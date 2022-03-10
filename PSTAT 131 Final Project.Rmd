@@ -16,6 +16,8 @@ library(dplyr)
 
 ## Introduction
 
+
+hello hello hello
 Grades are heavily influenced by a lot of factors. Whether a student has access to internet, how long it takes for the student to get to school, or even weekly alcohol consumption. Utilizing the dataset from UCI Machine Learning, our group is attempting to see the significance that certain variables have in predicting a student's final grade. 
 
 We first chose to look at the data concerning students in a Portuguese class as it has a total of 649 observations. 
