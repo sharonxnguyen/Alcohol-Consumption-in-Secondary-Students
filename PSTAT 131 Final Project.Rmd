@@ -7,12 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-<<<<<<< HEAD
 library(readr)
 library(dplyr)
-=======
-# gitcreds_set()
->>>>>>> 95aee943eba5c655bef67038196907c5e720c855
 ```
 
 # Alcohol Consumption in Secondary Students
@@ -26,30 +22,10 @@ We chose this particular dataset because as college students, final grades matte
 Grades are heavily influenced by a lot of factors. When taking into account final grades, many factors come into play. Did the student have access to internet? How long does it take for the student to get to school? Does the student have a lot of free time on their hands? Or even, did the student spend too much time consuming alcohol? Utilizing the dataset from UCI Machine Learning, our group is attempting to see the significance that certain variables have in predicting a student's final grade.
 
 
-
-
 We first chose to look at the data concerning students in a Portuguese class as it has a total of 649 observations. 
-
 
 # https://www.studyineurope.eu/study-in-portugal/grades
 
-
-
-
-```{r}
-# variables used
-
-#2. sex
-#3. age
-#4. 
-
-
-
-
-
-
-
-```
 
 ```{r}
 
