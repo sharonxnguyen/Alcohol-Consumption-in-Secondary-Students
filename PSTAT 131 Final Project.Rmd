@@ -18,12 +18,15 @@ library(dplyr)
 # Alcohol Consumption in Secondary Students
 ### By Sharon Nguyen, Matt Lee, Paul Song
 
-<<<<<<< HEAD
+<<<<<<< HEAD 
 ## Introduction
 
+We chose this particular dataset because as college students, final grades matter the most. What we do in our freetime greatly influences our performance in school. Drinking alcohol on a weekend is not uncommon for many college students. This project is relatable in terms of what factors affect us as students. We wanted to take it upon ourselves to investigate a real world problem that we struggle with and can seek knowledge from.
 
-hello hello hello
-Grades are heavily influenced by a lot of factors. Whether a student has access to internet, how long it takes for the student to get to school, or even weekly alcohol consumption. Utilizing the dataset from UCI Machine Learning, our group is attempting to see the significance that certain variables have in predicting a student's final grade. 
+Grades are heavily influenced by a lot of factors. When taking into account final grades, many factors come into play. Did the student have access to internet? How long does it take for the student to get to school? Does the student have a lot of free time on their hands? Or even, did the student spend too much time consuming alcohol? Utilizing the dataset from UCI Machine Learning, our group is attempting to see the significance that certain variables have in predicting a student's final grade.
+
+
+
 
 We first chose to look at the data concerning students in a Portuguese class as it has a total of 649 observations. 
 
