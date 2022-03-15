@@ -236,7 +236,7 @@ draw.tree(data.tree, cex = 0.5)
 ```
 ```{r}
 # Pruning 
-
+# Pruning doesn't fucking work
 data.tree.cv <- cv.tree(data.tree, FUN = prune.misclass)
 data.tree.cv
 ```
