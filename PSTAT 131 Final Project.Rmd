@@ -137,7 +137,7 @@ num_samp <- 0.7 * nrow(data)
 # y.test = student[-train, ]$G3
 
 
-train.indices <- sample(nrow(dat), num_samp)
+train.indices <- sample(nrow(data), num_samp)
 train <- data[train.indices,]
 test <- data[-train.indices,]
 ```
