@@ -114,6 +114,9 @@ str(data)
 # 2 Binary Pass/No Pass
 data <- data %>% mutate(grade=ifelse(G3/20 >= 0.7, 1, 0))
 
+data <- data %>% mutate(grade_2=factor(ifelse(G3/20 >= 0.7, 'Pass', 'No Pass'),
+                                       levels = c('No Pass', 'Pass')))
+
 # # 5 Letter Grading Scale
 # data <- data %>% 
 #   mutate(grade_5= ifelse(G3/20 >= 18/20, 'A', G3)) %>%
@@ -244,21 +247,47 @@ theme(
                 title.position = "top", title.hjust = 0.5))
 ```
 # Decision Tree
+```{r}
+# Entire Data Tree with chosen variables
+dat.tree <- tree(grade_2 ~ .-G3-grade, data = data)
+summary(dat.tree)
+draw.tree(dat.tree, nodeinfo=TRUE, cex = 0.5)
+title("Classification Tree Built on All Data Set")
+```
+
 
 ```{r}
-data <- data %>% mutate(grade_2=factor(ifelse(G3/20 >= 0.7, 'Pass', 'No Pass'),
-                                       levels = c('No Pass', 'Pass')))
-data.tree <- tree(grade_2 ~ ., data = data, subset = train.indices)
+data.tree <- tree(grade_2 ~ .-G3-grade, data = data, subset = train.indices)
 summary(data.tree)
 
-length(which(train$grade == 0))
+# length(which(train$grade == 0))
 # plot(data.tree)
 # text(data.tree, pretty = 0, cex = 0.8)
-draw.tree(data.tree, cex = 0.5)
+draw.tree(data.tree, nodeinfo=TRUE, cex = 0.5)
+title("Classification Tree Built on Training Set")
+
+# Predict on test set
+tree.pred <- predict(data.tree, test, type="class")
+
+# Obtain confusion matrix
+error = table(tree.pred, test$grade_2)
+error
+
+# Test accuracy rate
+sum(diag(error))/sum(error)
+
+# Test error rate (Classification Error)
+1-sum(diag(error))/sum(error)
 ```
+This approach leads to correct predictions for 92% of the locations in the test set. In other words, the test error rate is 8%. This is really equivalent to:
+
+```{r}
+mean(tree.pred != test$grade_2)
+```
+
+
 ```{r}
 # Pruning 
-# Pruning doesn't fucking work
 data.tree.cv <- cv.tree(data.tree, FUN = prune.misclass)
 data.tree.cv
 ```
