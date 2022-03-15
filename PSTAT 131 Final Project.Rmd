@@ -9,6 +9,10 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(readr)
 library(dplyr)
+
+library(ISLR)
+library(tree)
+library(maptree)
 ```
 
 # Alcohol Consumption in Secondary Students
@@ -120,7 +124,7 @@ str(dat)
 # Data Split
 ```{r}
 set.seed(7)
-num_samp <- 0.7 * nrow(student_por)
+num_samp <- 0.7 * nrow(data)
 
 # dat <- model.matrix(G3~., student_por)
 # 
@@ -133,9 +137,9 @@ num_samp <- 0.7 * nrow(student_por)
 # y.test = student[-train, ]$G3
 
 
-test.indices <- sample(nrow(dat), num_samp)
-train <- dat[-test.indices,]
-test <- dat[test.indices,]
+train.indices <- sample(nrow(dat), num_samp)
+train <- dat[train.indices,]
+test <- dat[-train.indices,]
 ```
 
 # Exploratory Data Analysis
@@ -146,7 +150,7 @@ library(ggplot2)
 cor_train <- train %>% mutate(grade=ifelse(G3/20 >= 0.7, 1, 0))
 
 cor_train <- cor_train %>% select(-higher, -internet, -G3)
-cormat <- round(cor(cor_train), 2)
+cormat <- round(cor(cor_train), 2) # says error: 'x' must be numeric
 melted_cormat <- melt(cormat)
 ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + 
   geom_raster()
@@ -220,6 +224,24 @@ theme(
   guides(fill = guide_colorbar(barwidth = 7, barheight = 1,
                 title.position = "top", title.hjust = 0.5))
 ```
+# Decision Tree
+
+```{r}
+data.tree <- tree(G3 ~ ., data = train, subset = train.indices)
+summary(data.tree)
+
+plot(data.tree)
+text(data.tree, pretty = 0, cex = 0.8)
+draw.tree(data.tree, cex = 0.5)
+```
+```{r}
+# Pruning 
+
+data.tree.cv <- cv.tree(data.tree, FUN = prune.misclass)
+data.tree.cv
+```
+
+
 
 
 # Analysis of the Test Set
