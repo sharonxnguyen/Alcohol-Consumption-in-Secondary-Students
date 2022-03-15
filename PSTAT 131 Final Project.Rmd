@@ -138,8 +138,8 @@ num_samp <- 0.7 * nrow(data)
 
 
 train.indices <- sample(nrow(dat), num_samp)
-train <- dat[train.indices,]
-test <- dat[-train.indices,]
+train <- data[train.indices,]
+test <- data[-train.indices,]
 ```
 
 # Exploratory Data Analysis
@@ -236,7 +236,7 @@ draw.tree(data.tree, cex = 0.5)
 ```
 ```{r}
 # Pruning 
-
+# Pruning doesn't fucking work
 data.tree.cv <- cv.tree(data.tree, FUN = prune.misclass)
 data.tree.cv
 ```
