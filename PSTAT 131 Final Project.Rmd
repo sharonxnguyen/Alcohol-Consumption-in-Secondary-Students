@@ -246,11 +246,14 @@ theme(
 # Decision Tree
 
 ```{r}
-data.tree <- tree(G3 ~ ., data = train, subset = train.indices)
+data <- data %>% mutate(grade_2=factor(ifelse(G3/20 >= 0.7, 'Pass', 'No Pass'),
+                                       levels = c('No Pass', 'Pass')))
+data.tree <- tree(grade_2 ~ ., data = data, subset = train.indices)
 summary(data.tree)
 
-plot(data.tree)
-text(data.tree, pretty = 0, cex = 0.8)
+length(which(train$grade == 0))
+# plot(data.tree)
+# text(data.tree, pretty = 0, cex = 0.8)
 draw.tree(data.tree, cex = 0.5)
 ```
 ```{r}
