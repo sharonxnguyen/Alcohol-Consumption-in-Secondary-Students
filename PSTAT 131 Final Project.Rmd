@@ -2,17 +2,21 @@
 title: 'PSTAT 131: Final Project'
 author: "Sharon Nguyen, Matt Lee, Paul Song"
 date: "3/8/2022"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(readr)
 library(dplyr)
-
 library(ISLR)
 library(tree)
 library(maptree)
+library(reshape2)
+library(ggplot2)
+library(gridExtra)
 ```
 
 # Alcohol Consumption in Secondary Students
@@ -31,6 +35,8 @@ library(maptree)
 
 By finding key variables that predict final grades of students within a Portuguese secondary school, we can learn the best ways to provide support for students academically.
 
+The variables we considered were based on our own opinions about possible influences to final grades.
+
 # Why we chose this data 
 
 We chose this particular dataset because as college students, final grades matter the most. What we do in our freetime greatly influences our performance in school. Drinking alcohol on a weekend is not uncommon for many college students. This project is relatable in terms of what factors affect us as students. We wanted to take it upon ourselves to investigate a real world problem that we struggle with and can seek knowledge from.
@@ -44,12 +50,11 @@ We  chose to look at the data concerning students in a Portuguese class as it ha
 
 # Loading Data and Packages
 ```{r}
-library(gitcreds)
-library(dplyr)
 dat <- read.csv("student-por.csv")
 
 # Select wanted variables for analysis
-data <- dat %>% select(traveltime, studytime, failures, higher, internet, famrel, freetime, goout, Dalc, Walc, health, absences, G3)
+data <- dat %>% select(traveltime, studytime, failures, higher, internet, famrel, freetime, goout, Dalc, Walc, health, absences, G2, G3)
+
 str(data)
 ```
 
@@ -88,11 +93,13 @@ G3: final grade (numeric: from 0 to 20, output target)
 
 ```{r}
 # Make variables ordered
-data$traveltime <- ordered(data$traveltime, levels = c(1:4), labels = c('1', '2', '3', '4')) 
-data$studytime <- ordered(data$studytime, levels = c(1:4), labels = c('1', '2', '3', '4'))
+data$traveltime <- factor(data$traveltime, ordered=TRUE, labels = c('<15 min', '15 to 30 min.', '30 min. to 1 hour', '>1 hour'))
+  # ordered(data$traveltime, levels = c(1:4), labels = c('<15 min', '15 to 30 min.', '30 min. to 1 hour', '>1 hour')) 
+data$studytime <- factor(data$traveltime, ordered=TRUE, labels = c('<2 hours', '2 to 5 hours', '5 to 10 hours', '>10 hours'))
+  # ordered(data$studytime, levels = c(1:4), labels = c('<2 hours', '2 to 5 hours', '5 to 10 hours', '>10 hours'))
 data$failures <- ordered(data$failures, levels = c(0:3), labels = c('0', '1', '2', '3'))
-data$higher <- ifelse(data$higher == "yes", 1, 0)
-data$internet <- ifelse(data$internet == "yes", 1, 0)
+data$higher <- factor(data$higher, labels = c('no', 'yes'))
+data$internet <- factor(data$internet, labels = c('no', 'yes'))
 
 # famrel to health
 for(i in 6:11){
@@ -105,8 +112,7 @@ str(data)
 
 ```{r}
 # 2 Binary Pass/No Pass
-data <- data %>% mutate(grade_2=factor(ifelse(G3/20 >= 0.7, 'Pass', 'No Pass'), 
-                                    levels = c('No Pass', 'Pass')))
+data <- data %>% mutate(grade=ifelse(G3/20 >= 0.7, 1, 0))
 
 # # 5 Letter Grading Scale
 # data <- data %>% 
@@ -116,7 +122,7 @@ data <- data %>% mutate(grade_2=factor(ifelse(G3/20 >= 0.7, 'Pass', 'No Pass'),
 #   mutate(grade_5= ifelse(G3/20 >= 12/20 &&  G3/20 <= 13/20, 'D', G3)) %>% 
 #   mutate(grade_5= ifelse(G3/20 >= 10/20 &&  G3/20 <= 11/20, 'E', G3))
 
-str(dat)
+str(data)
 ```
 
 
@@ -126,14 +132,14 @@ str(dat)
 set.seed(7)
 num_samp <- 0.7 * nrow(data)
 
-# dat <- model.matrix(G3~., student_por)
+# t <- model.matrix(G3~., student_por)
 # 
-# train = sample(nrow(dat), num_samp)
-# x.train = dat[train, ]
+# train = sample(nrow(t), num_samp)
+# x.train = t[train, ]
 # y.train = student[train, ]$G3
 # 
 # # The rest as test data
-# x.test = dat[-train, ]
+# x.test = t[-train, ]
 # y.test = student[-train, ]$G3
 
 
@@ -143,14 +149,38 @@ test <- data[-train.indices,]
 ```
 
 # Exploratory Data Analysis
-```{r}
-library(reshape2)
-library(ggplot2)
-# correlation matrix
-cor_train <- train %>% mutate(grade=ifelse(G3/20 >= 0.7, 1, 0))
+```{r fig.height = 12, fig.width = 6}
+# for(i in colnames(data)){
+#  print(ggplot(data, aes(x=i)) + geom_histogram(fill='lightblue', stat="count"))
+# }
 
-cor_train <- cor_train %>% select(-higher, -internet, -G3)
-cormat <- round(cor(cor_train), 2) # says error: 'x' must be numeric
+t <- ggplot(data, aes(x=traveltime)) + geom_histogram(fill='lightblue', stat="count")
+s <- ggplot(data, aes(x=studytime)) + geom_histogram(fill='lightblue', stat="count")
+hi <- ggplot(data, aes(x=higher)) + geom_histogram(fill='lightblue', stat="count")
+i <- ggplot(data, aes(x=internet)) + geom_histogram(fill='lightblue', stat="count")
+fa <- ggplot(data, aes(x=famrel)) + geom_histogram(fill='lightblue', stat="count")
+fr <- ggplot(data, aes(x=freetime)) + geom_histogram(fill='lightblue', stat="count")
+g <- ggplot(data, aes(x=goout)) + geom_histogram(fill='lightblue', stat="count")
+d <- ggplot(data, aes(x=Dalc)) + geom_histogram(fill='lightblue', stat="count")
+w <- ggplot(data, aes(x=Walc)) + geom_histogram(fill='lightblue', stat="count")
+he <- ggplot(data, aes(x=health)) + geom_histogram(fill='lightblue', stat="count")
+a <- ggplot(data, aes(x=absences)) + geom_histogram(fill='lightblue', stat="count")
+g3 <- ggplot(data, aes(x=G3)) + geom_histogram(fill='lightblue', stat="count")
+g <- ggplot(data, aes(x=grade)) + geom_histogram(fill='lightblue', stat="count")
+
+grid.arrange(t,s,hi,i,fa, fr, g, d, w, he, a, g3, g, ncol=2)
+
+
+# ggplot(melt(data),aes(x=value)) + geom_histogram(fill='lightblue', stat="count") + facet_wrap(~variable)
+# ggplot(melt(data[,1]], id.vars=1:4),aes(x=value)) + geom_histogram() + facet_wrap(~variable)
+```
+
+```{r}
+# correlation matrix
+cor_train <- train
+
+cor_train <- cor_train %>% select(absences, G2, G3)
+cormat <- round(cor(cor_train), 2) 
 melted_cormat <- melt(cormat)
 ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + 
   geom_raster()
@@ -171,17 +201,6 @@ upper_tri
 
 # Melt the correlation matrix
 melted_cormat <- melt(upper_tri, na.rm = TRUE)
-
-# # Heatmap
-# ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
-#  geom_tile(color = "white")+
-#  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
-#    midpoint = 0, limit = c(-1,1), space = "Lab", 
-#    name="Pearson\nCorrelation") +
-#   theme_minimal()+ 
-#  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
-#     size = 12, hjust = 1))+
-#  coord_fixed()
 
 reorder_cormat <- function(cormat){
 # Use correlation between variables as distance
@@ -268,4 +287,3 @@ We believe that the question would be best answered with a regression approach. 
 
 # Comments
 Predict G1, G2, and G3
->>>>>>> 95aee943eba5c655bef67038196907c5e720c855
