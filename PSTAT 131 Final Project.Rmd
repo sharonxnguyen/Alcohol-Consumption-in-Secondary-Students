@@ -31,16 +31,17 @@ library(gridExtra)
 
 # Introduction
 
-By finding key variables that predict final grades of students within a Portuguese secondary school, we can learn the best ways to provide support for students academically.. We want to know where students are most affected by external factors so that we can further adjust our resources to the quickly changing societal needs. 
-The variables we considered were based on our own opinions about possible influences to final grades. 
+### By Sharon Nguyen, Matt Lee, Paul Song
 
-For example, Drinking alcohol on weekends is not an uncommon practice in European high school student, and the assumption is this has a negative correlation to students' grades. However, we are here to find out whether this is indeed the case. 
+<https://www.studyineurope.eu/study-in-portugal/grades>
 
+By finding key variables that predict final grades of students within a Portuguese secondary school, we can learn the best ways to provide support for students academically.. We want to know where students are most affected by external factors so that we can further adjust our resources to the quickly changing societal needs. The variables we considered were based on our own opinions about possible influences to final grades.
 
-# As a group, we've decided to go with the classification route; hence, using a decision tree, random forest, KNN, and .  We converted the type of our original dataset containing numeric variables to binary (Pass/No Pass) and ordered data. 
+For example, Drinking alcohol on weekends is not an uncommon practice in European high school student, and the assumption is this has a negative correlation to students' grades. However, we are here to find out whether this is indeed the case.
 
+In our project, we decided to take a dataset containing numerous characteristics of students in a secondary (high) school in Porto, Portugal in an attempt to predict the final grade of students based on these attributes. We mixed and matched different characteristics to find significant or intriguing correlation between such characteristics.
 
-The variables we considered were based on our own opinions about possible influences to final grades.
+As a group, we've decided to go with the classification route; hence, using a decision tree, random forest, and KNN. We converted the type of our original dataset containing numeric variables to binary (Pass/No Pass) and ordered data.
 
 # Why we chose this data
 
@@ -91,6 +92,8 @@ These are the key variables that our final project will utilize within our model
 
 `absences`: number of school absences (numeric: from 0 to 93)
 
+`G2`: second period grade (numeric: from 0 to 20)
+
 `G3`: final grade (numeric: from 0 to 20, output target)
 
 # Data Cleaning
@@ -104,33 +107,36 @@ data$studytime <- factor(data$traveltime, ordered=TRUE, labels = c('<2 hours', '
 data$failures <- ordered(data$failures, levels = c(0:3), labels = c('0', '1', '2', '3'))
 data$higher <- factor(data$higher, labels = c('no', 'yes'))
 data$internet <- factor(data$internet, labels = c('no', 'yes'))
+data$famrel <- factor(data$famrel, ordered=TRUE, labels = c("very bad", "bad", "fair", "good", "excellent"))
 
-# famrel to health
-for(i in 6:11){
-  data[,i] <- ordered(data[,i], levels = c(1:5), labels = c('1', '2', '3', '4', '5')) 
+# freetime to Walc
+for(i in 7:10){
+  data[,i] <- factor(data[,i], ordered=TRUE, labels = c("very low", "low", "medium", "high", "very high"))
 }
 
-# view strucutre
-str(data)
-```
+data$health <- factor(data$health, ordered=TRUE, labels = c("very bad", "bad", "fair", "good", "very good"))
+# data$G2 <- ordered(data$G2, levels = c(0:20))
+# data$G3 <- ordered(data$G3, levels = c(0:20))
 
-```{r}
 # 2 Binary Pass/No Pass
 data <- data %>% mutate(grade=ifelse(G3/20 >= 0.7, 1, 0))
 
 data <- data %>% mutate(grade_2=factor(ifelse(G3/20 >= 0.7, 'Pass', 'No Pass'),
                                        levels = c('No Pass', 'Pass')))
 
-# # 5 Letter Grading Scale
-# data <- data %>% 
-#   mutate(grade_5= ifelse(G3/20 >= 18/20, 'A', G3)) %>%
-#   mutate(grade_5= ifelse(G3/20 >= 16/20 &&  G3/20 <= 17/20, 'B', G3)) %>%
-#   mutate(grade_5= ifelse(G3/20 >= 14/20 &&  G3/20 <= 15/20, 'C', G3)) %>%
-#   mutate(grade_5= ifelse(G3/20 >= 12/20 &&  G3/20 <= 13/20, 'D', G3)) %>% 
-#   mutate(grade_5= ifelse(G3/20 >= 10/20 &&  G3/20 <= 11/20, 'E', G3))
+str(data)
 
+# view strucutre
 str(data)
 ```
+
+$$\text{grade} = \left\{
+\begin{array}{ll}
+      \text{No Pass}, & \text{if } [\frac{\text{G3}}{20} \times 100] < 70\%  \\
+      \text{Pass}, & \text{if } [\frac{\text{G3}}{20} \times 100] \ge 70\% \\ 
+\end{array} 
+\right. 
+$$
 
 # Data Split
 
@@ -139,6 +145,7 @@ set.seed(123)
 num_samp <- 0.7 * nrow(data)
 
 t <- model.matrix(grade_2 ~ .-G3-grade, data) 
+
 # 
 train = sample(nrow(t), num_samp)
 x.train = t[train, ]
@@ -154,7 +161,6 @@ train <- data[train.indices,]
 test <- data[-train.indices,]
 ```
 
-
 # Exploratory Data Analysis
 
 ```{r}
@@ -163,35 +169,14 @@ for(i in 1:14){
 }
 ```
 
-```{r fig.height = 12, fig.width = 6, warning=FALSE}
-```
-
-# Exploratory Data Analysis
-
 ```{r fig.height = 12, fig.width = 6}
-# for(i in colnames(data)){
-#  print(ggplot(data, aes(x=i)) + geom_histogram(fill='lightblue', stat="count"))
-# }
-
-t <- ggplot(data, aes(x=traveltime)) + geom_histogram(fill='lightblue', stat="count")
-s <- ggplot(data, aes(x=studytime)) + geom_histogram(fill='lightblue', stat="count")
-hi <- ggplot(data, aes(x=higher)) + geom_histogram(fill='lightblue', stat="count")
-i <- ggplot(data, aes(x=internet)) + geom_histogram(fill='lightblue', stat="count")
-fa <- ggplot(data, aes(x=famrel)) + geom_histogram(fill='lightblue', stat="count")
-fr <- ggplot(data, aes(x=freetime)) + geom_histogram(fill='lightblue', stat="count")
-g <- ggplot(data, aes(x=goout)) + geom_histogram(fill='lightblue', stat="count")
-d <- ggplot(data, aes(x=Dalc)) + geom_histogram(fill='lightblue', stat="count")
-w <- ggplot(data, aes(x=Walc)) + geom_histogram(fill='lightblue', stat="count")
-he <- ggplot(data, aes(x=health)) + geom_histogram(fill='lightblue', stat="count")
-a <- ggplot(data, aes(x=absences)) + geom_histogram(fill='lightblue', stat="count")
-g3 <- ggplot(data, aes(x=G3)) + geom_histogram(fill='lightblue', stat="count")
-g <- ggplot(data, aes(x=grade)) + geom_histogram(fill='lightblue', stat="count")
-
-grid.arrange(t,s,hi,i,fa, fr, g, d, w, he, a, g3, g, ncol=2)
-
-
-# ggplot(melt(data),aes(x=value)) + geom_histogram(fill='lightblue', stat="count") + facet_wrap(~variable)
-# ggplot(melt(data[,1]], id.vars=1:4),aes(x=value)) + geom_histogram() + facet_wrap(~variable)
+plotlist <- list()
+for(i in 1:16){
+ p <- ggplot(data, aes_string(x=data[,i])) + geom_histogram(fill='lightblue', stat="count") + 
+   xlab(colnames(data)[i])
+ plotlist[[i]] <- p
+}
+grid.arrange(grobs=plotlist, ncol=2, top = "Histograms of All Data Variables")
 ```
 
 ```{r}
@@ -243,8 +228,8 @@ ggheatmap <- ggplot(melted_cormat, aes(Var2, Var1, fill = value))+
  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
     size = 12, hjust = 1))+
  coord_fixed()
-# Print the heatmap
-print(ggheatmap)
+# # Print the heatmap
+# print(ggheatmap)
 
 
 ggheatmap + 
@@ -263,12 +248,7 @@ theme(
                 title.position = "top", title.hjust = 0.5))
 ```
 
-```{r}
-
-table(data$Dalc)
-
-table(data$Walc)
-```
+From the heat map, we can see absences and final grade (G3) have low correlation. However, we can also see that second period grade (G2) and final grades (G3) have very positive correlation.
 
 # Decision Tree
 
@@ -311,7 +291,9 @@ mean(tree.pred != test$grade_2)
 ```
 
 # Pruning
+
 ### k-fold Cross-validation
+
 ```{r}
 # set random see
 set.seed(123)
@@ -330,6 +312,7 @@ best.cv
 ```
 
 ## Error vs. Best Size plot
+
 ```{r}
 # Plot size vs. cross-validation error rate
 plot(cv$size , cv$dev, type="b",
@@ -337,21 +320,40 @@ plot(cv$size , cv$dev, type="b",
      col = "red", main="CV")
 abline(v=best.cv, lty=2)
 # Add lines to identify complexity parameter
-min.error = which.min(cv$dev) # Get minimum error index abline(h = cv$dev[min.error],lty = 2)
+min.error = which.min(cv$dev) # Get minimum error index 
+abline(h = cv$dev[min.error],lty = 2)
 ```
+
 ## Prune tree
+
 ```{r}
 # Prune data.tree
 pt.cv = prune.misclass (data.tree, best=best.cv)
 
 # Plot pruned tree
-plot(pt.cv)
-text(pt.cv, pretty=0, col = "blue", cex = .5)
 draw.tree(pt.cv, nodeinfo=TRUE, cex = 0.5)
 title("Pruned tree of size 2")
 ```
 
+## Respective Test Error Rate for model pt.cv
+
+```{r}
+# Predict on test set
+pred.pt.cv = predict(pt.cv, test, type="class") # Obtain confusion matrix
+err.pt.cv = table(pred.pt.cv, test$grade_2)
+err.pt.cv
+
+ # Test accuracy rate
+sum(diag(err.pt.cv))/sum(err.pt.cv)
+
+# Test error rate (Classification Error)
+1-sum(diag(err.pt.cv))/sum(err.pt.cv)
+```
+
+The test error rate for pt.cv is 7%, which is identical to the test error rate for when we used function `tree()`. This means we get a simpler tree for free (without any cost in prediction error rate) by pruning. Thus, we prefer the pruned tree.
+
 # Random Forest
+
 ```{r}
 # Random Forest
 data.rf <- randomForest(grade_2 ~ .-G3-grade, data = data, subset = train.indices, norm.votes = FALSE)
@@ -372,8 +374,6 @@ importance(data.rf)
 varImpPlot(data.rf)
 varImpPlot(data.rf, sort=T, main='Predictor Importance for Random Forest Model')
 ```
-
-
 
 # K Nearest Neighbors
 
@@ -399,7 +399,8 @@ conf.test
 # testing error rate
 1 - sum(diag(conf.test)/sum(conf.test)) 
 ```
-After training the classifier our predictions on the training set led to a training error rate of 7.49%. Afterwards, we trained the classifier and made predictions on the test set, resulting in a testing error rate equal to 8.71%. We then decided to increase our k and see if it would alter the training error rate and test error rate. 
+
+After training the classifier our predictions on the training set led to a training error rate of 7.49%. Afterwards, we trained the classifier and made predictions on the test set, resulting in a testing error rate equal to 8.71%. We then decided to increase our k and see if it would alter the training error rate and test error rate.
 
 ```{r}
 set.seed(123)
@@ -422,11 +423,10 @@ conf.test
 1 - sum(diag(conf.test)/sum(conf.test)) 
 
 ```
-Similar to the initial K-Nearest-Neighbors approach, after training the classifier, our predictions on the training set led to a 7.71%% training error rate and a testing error rate of 8.71%. Our training error rate increased by .22% and our testing error rate remained the same. 
 
-We see that our testing error rate is higher then our training error rate. 
+Similar to the initial K-Nearest-Neighbors approach, after training the classifier, our predictions on the training set led to a 7.71%% training error rate and a testing error rate of 8.71%. Our training error rate increased by .22% and our testing error rate remained the same.
 
-
+We see that our testing error rate is higher then our training error rate.
 
 # Analysis of the Test Set
 
@@ -434,7 +434,7 @@ We see that our testing error rate is higher then our training error rate.
 
 # Reference
 
-[<https://www.studyineurope.eu/study-in-portugal/grades>](https://www.studyineurope.eu/study-in-portugal/grades){.uri}
+[\<https://www.studyineurope.eu/study-in-portugal/grades>](https://www.studyineurope.eu/study-in-portugal/grades){.uri}
 
 ## An Overview of Your Dataset
 
@@ -447,7 +447,3 @@ In the dataset, we will be dealing with both qualitative and quantitative variab
 We are interested in predicting the number of times a student consumes alcohol every week. We want to figure out whether variables such as free time and parent's education status has an effect on the number of times a student drinks alcohol each week. Our response variable will be Dalc (Workday alcohol consumption) and Walc (Weekend alcohol consumption) added together to make Alc (Weekly alcohol consumption).
 
 We believe that the question would be best answered with a classification approach. Of these 33 predictors, we find that final grade, free time, absences, family's education support, study time, parent cohabitation status, parent's education, number of failed classes, quality of family relationship, and going out with friends will be useful for our prediction.
-
-# Comments
-
-Predict G1, G2, and G3
