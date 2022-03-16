@@ -11,11 +11,14 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 library(readr)
 library(dplyr)
+library(randomForest)
 library(ISLR)
 library(tree)
 library(maptree)
 library(reshape2)
 library(ggplot2)
+library(class)
+library(FNN)
 library(gridExtra)
 ```
 
@@ -135,21 +138,44 @@ str(data)
 set.seed(7)
 num_samp <- 0.7 * nrow(data)
 
-# t <- model.matrix(G3~., student_por)
+t <- model.matrix(G3~., data) # use student_por or data?
 # 
-# train = sample(nrow(t), num_samp)
-# x.train = t[train, ]
-# y.train = student[train, ]$G3
+train = sample(nrow(t), num_samp)
+x.train = t[train, ]
+y.train = data[train, ]$G3
 # 
 # # The rest as test data
-# x.test = t[-train, ]
-# y.test = student[-train, ]$G3
+x.test = t[-train, ]
+y.test = data[-train, ]$G3
 
 
 train.indices <- sample(nrow(data), num_samp)
 train <- data[train.indices,]
 test <- data[-train.indices,]
+
+
+#Ytrain <- train$G3
+#Xtrain <- train %>% select(-grade) %>% scale(center=TRUE, scale=TRUE)
+
+#Ytest <- test$G3
+#Xtest <- test %>% select(-grade) %>% scale(center=TRUE, scale=TRUE)
+
 ```
+
+##### Matt's pile of trash
+```{r}
+set.seed(123)
+
+# training classifier, predict on training set
+pred.Ytrain = knn(train=Xtrain, test=Xtrain, cl=Ytrain, k=2)
+
+#confusion matrix
+conf.train <- table(predicted=pred.Ytrain, true=Ytrain)
+conf.train
+```
+
+
+
 
 # Exploratory Data Analysis
 ```{r fig.height = 12, fig.width = 6}
@@ -292,6 +318,44 @@ data.tree.cv <- cv.tree(data.tree, FUN = prune.misclass)
 data.tree.cv
 ```
 
+```{r}
+# Random Forest
+data.rf <- randomForest(grade ~., data = data, subset = train.indices, norm.votes = FALSE)
+print(data.rf)
+
+```
+
+
+# K Nearest Neighbors
+```{r}
+# KNN
+set.seed(123)
+
+pred.ytrain <- knn(train=x.train, test=x.train, cl=y.train, k = 5)
+
+conf.train <- table(predicted=pred.ytrain, true=y.train)
+conf.train
+
+# training error rate
+1 - sum(diag(conf.train)/sum(conf.train))
+
+
+# training classifier, making prediction on test set - KNN
+pred.ytest <- knn(train=x.train, test=x.test, cl=y.train, k=5)
+
+conf.test <- table(predicted=pred.ytest, true=y.test)
+conf.test
+
+# testing error rate
+1 - sum(diag(conf.test)/sum(conf.test)) 
+```
+
+
+
+
+
+
+
 
 
 
@@ -300,6 +364,8 @@ data.tree.cv
 
 
 # Conclusion 
+
+
 
 
 
