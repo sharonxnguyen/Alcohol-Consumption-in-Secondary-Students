@@ -5,6 +5,7 @@ date: "3/8/2022"
 output:
   pdf_document: default
   html_document: default
+  code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
@@ -23,35 +24,36 @@ library(gridExtra)
 ```
 
 # Alcohol Consumption in Secondary Students
+
 ### By Sharon Nguyen, Matt Lee, Paul Song
-
- https://www.studyineurope.eu/study-in-portugal/grades
-
-
-
 
 # Abstract
 
-
-
 # Introduction
 
-By finding key variables that predict final grades of students within a Portuguese secondary school, we can learn the best ways to provide support for students academically.
+By finding key variables that predict final grades of students within a Portuguese secondary school, we can learn the best ways to provide support for students academically.. We want to know where students are most affected by external factors so that we can further adjust our resources to the quickly changing societal needs. 
+The variables we considered were based on our own opinions about possible influences to final grades. 
+
+For example, Drinking alcohol on weekends is not an uncommon practice in European high school student, and the assumption is this has a negative correlation to students' grades. However, we are here to find out whether this is indeed the case. 
+
+
+# As a group, we've decided to go with the classification route; hence, using a decision tree, random forest, KNN, and .  We converted the type of our original dataset containing numeric variables to binary (Pass/No Pass) and ordered data. 
+
 
 The variables we considered were based on our own opinions about possible influences to final grades.
 
-# Why we chose this data 
+# Why we chose this data
 
 We chose this particular dataset because as college students, final grades matter the most. What we do in our freetime greatly influences our performance in school. Drinking alcohol on a weekend is not uncommon for many college students. This project is relatable in terms of what factors affect us as students. We wanted to take it upon ourselves to investigate a real world problem that we struggle with and can seek knowledge from.
 
 Grades are heavily influenced by a lot of factors. When taking into account final grades, many factors come into play. Did the student have access to internet? How long does it take for the student to get to school? Does the student have a lot of free time on their hands? Or even, did the student spend too much time consuming alcohol? Utilizing the dataset from UCI Machine Learning, our group is attempting to see the significance that certain variables have in predicting a student's final grade.
 
-We  chose to look at the data concerning students in a Portuguese class as it has a total of 649 observations. 
+We chose to look at the data concerning students in a Portuguese class as it has a total of 649 observations.
 
 # Why might this model be useful?
 
-
 # Loading Data and Packages
+
 ```{r}
 dat <- read.csv("student-por.csv")
 
@@ -61,36 +63,35 @@ data <- dat %>% select(traveltime, studytime, failures, higher, internet, famrel
 str(data)
 ```
 
-
 # Variable Analysis
 
-These are the key variables that our final project will utilize within our modeling. A brief explanation of each is provided down below. 
+These are the key variables that our final project will utilize within our modeling. A brief explanation of each is provided down below.
 
-traveltime: home to school travel time (numeric: 1 - <15 min., 2 - 15 to 30 min., 3 - 30 min. to 1 hour, or 4 - >1 hour)
+`traveltime`: home to school travel time (numeric: 1 - \<15 min., 2 - 15 to 30 min., 3 - 30 min. to 1 hour, or 4 - \>1 hour)
 
-studytime: weekly study time (numeric: 1 - <2 hours, 2 - 2 to 5 hours, 3 - 5 to 10 hours, or 4 - >10 hours)
+`studytime`: weekly study time (numeric: 1 - \<2 hours, 2 - 2 to 5 hours, 3 - 5 to 10 hours, or 4 - \>10 hours)
 
-failures: number of past class failures (numeric: n if 1<=n<3, else 4)
+`failures`: number of past class failures (numeric: n if 1\<=n\<3, else 4)
 
-higher: wants to take higher education (binary: yes or no)
+`higher`: wants to take higher education (binary: yes or no)
 
-internet: Internet access at home (binary: yes or no)
+`internet`: Internet access at home (binary: yes or no)
 
-famrel: quality of family relationships (numeric: from 1 - very bad to 5 - excellent)
+`famrel`: quality of family relationships (numeric: from 1 - very bad to 5 - excellent)
 
-freetime: free time after school (numeric: from 1 - very low to 5 - very high)
+`freetime`: free time after school (numeric: from 1 - very low to 5 - very high)
 
-goout: going out with friends (numeric: from 1 - very low to 5 - very high)
+`goout`: going out with friends (numeric: from 1 - very low to 5 - very high)
 
-Dalc: workday alcohol consumption (numeric: from 1 - very low to 5 - very high)
+`Dalc`: workday alcohol consumption (numeric: from 1 - very low to 5 - very high)
 
-Walc: weekend alcohol consumption (numeric: from 1 - very low to 5 - very high)
+`Walc`: weekend alcohol consumption (numeric: from 1 - very low to 5 - very high)
 
-health: current health status (numeric: from 1 - very bad to 5 - very good)
+`health`: current health status (numeric: from 1 - very bad to 5 - very good)
 
-absences: number of school absences (numeric: from 0 to 93)
+`absences`: number of school absences (numeric: from 0 to 93)
 
-G3: final grade (numeric: from 0 to 20, output target)
+`G3`: final grade (numeric: from 0 to 20, output target)
 
 # Data Cleaning
 
@@ -131,30 +132,27 @@ data <- data %>% mutate(grade_2=factor(ifelse(G3/20 >= 0.7, 'Pass', 'No Pass'),
 str(data)
 ```
 
-
-
 # Data Split
+
 ```{r}
 set.seed(123)
 num_samp <- 0.7 * nrow(data)
 
-t <- model.matrix(G3~., data) # use student_por or data?
+t <- model.matrix(grade_2 ~ .-G3-grade, data) 
 # 
 train = sample(nrow(t), num_samp)
 x.train = t[train, ]
-y.train = data[train, ]$G3
+y.train = data[train, ]$grade_2
 # 
 # # The rest as test data
 x.test = t[-train, ]
-y.test = data[-train, ]$G3
+y.test = data[-train, ]$grade_2
 
 
 train.indices <- sample(nrow(data), num_samp)
 train <- data[train.indices,]
 test <- data[-train.indices,]
 ```
-
-
 
 
 # Exploratory Data Analysis
@@ -166,6 +164,11 @@ for(i in 1:14){
 ```
 
 ```{r fig.height = 12, fig.width = 6, warning=FALSE}
+```
+
+# Exploratory Data Analysis
+
+```{r fig.height = 12, fig.width = 6}
 # for(i in colnames(data)){
 #  print(ggplot(data, aes(x=i)) + geom_histogram(fill='lightblue', stat="count"))
 # }
@@ -260,8 +263,15 @@ theme(
                 title.position = "top", title.hjust = 0.5))
 ```
 
+```{r}
+
+table(data$Dalc)
+
+table(data$Walc)
+```
 
 # Decision Tree
+
 ```{r}
 # Entire Data Tree with chosen variables
 dat.tree <- tree(grade_2 ~ .-G3-grade, data = data)
@@ -269,7 +279,6 @@ summary(dat.tree)
 draw.tree(dat.tree, nodeinfo=TRUE, cex = 0.5)
 title("Classification Tree Built on All Data Set")
 ```
-
 
 ```{r}
 data.tree <- tree(grade_2 ~ .-G3-grade, data = data, subset = train.indices)
@@ -294,6 +303,7 @@ sum(diag(error))/sum(error)
 # Test error rate (Classification Error)
 1-sum(diag(error))/sum(error)
 ```
+
 This approach leads to correct predictions for 93% of the locations in the test set. In other words, the test error rate is 7%. This is really equivalent to:
 
 ```{r}
@@ -341,24 +351,37 @@ draw.tree(pt.cv, nodeinfo=TRUE, cex = 0.5)
 title("Pruned tree of size 2")
 ```
 
-
-
-
-
 # Random Forest
 ```{r}
 # Random Forest
 data.rf <- randomForest(grade_2 ~ .-G3-grade, data = data, subset = train.indices, norm.votes = FALSE)
 print(data.rf)
+
+plot(data.rf, main='Random Forest Model')
+
+# test error rate calculations
+yhat.rf <- predict(data.rf, newdata=test)
+
+# confusion matrix
+rf.err <- table(pred = yhat.rf, truth=test$grade_2)
+test.rf.err <- 1 - sum(diag(rf.err))/sum(rf.err)
+test.rf.err # 0.07692308
+
+importance(data.rf)
+
+varImpPlot(data.rf)
+varImpPlot(data.rf, sort=T, main='Predictor Importance for Random Forest Model')
 ```
 
 
+
 # K Nearest Neighbors
+
 ```{r}
 # KNN
 set.seed(123)
 
-pred.ytrain <- knn(train=x.train, test=x.train, cl=y.train, k = 5)
+pred.ytrain <- knn(train=x.train, test=x.train, cl=y.train, k=5)
 
 conf.train <- table(predicted=pred.ytrain, true=y.train)
 conf.train
@@ -376,39 +399,55 @@ conf.test
 # testing error rate
 1 - sum(diag(conf.test)/sum(conf.test)) 
 ```
+After training the classifier our predictions on the training set led to a training error rate of 7.49%. Afterwards, we trained the classifier and made predictions on the test set, resulting in a testing error rate equal to 8.71%. We then decided to increase our k and see if it would alter the training error rate and test error rate. 
 
+```{r}
+set.seed(123)
 
+pred.ytrain <- knn(train=x.train, test=x.train, cl=y.train, k=10)
 
+conf.train <- table(predicted=pred.ytrain, true=y.train)
+conf.train
 
+# training error rate
+1 - sum(diag(conf.train)/sum(conf.train))
 
+# training classifier, making prediction on test set - KNN
+pred.ytest <- knn(train=x.train, test=x.test, cl=y.train, k=10)
 
+conf.test <- table(predicted=pred.ytest, true=y.test)
+conf.test
 
+# testing error rate
+1 - sum(diag(conf.test)/sum(conf.test)) 
+
+```
+Similar to the initial K-Nearest-Neighbors approach, after training the classifier, our predictions on the training set led to a 7.71%% training error rate and a testing error rate of 8.71%. Our training error rate increased by .22% and our testing error rate remained the same. 
+
+We see that our testing error rate is higher then our training error rate. 
 
 
 
 # Analysis of the Test Set
 
-
-
-# Conclusion 
-
-
-
-
+# Conclusion
 
 # Reference
 
+[<https://www.studyineurope.eu/study-in-portugal/grades>](https://www.studyineurope.eu/study-in-portugal/grades){.uri}
+
 ## An Overview of Your Dataset
 
-The data was obtained in a survey of students' math course in secondary school in Portugal. Called "Student Alcohol Consumption", the dataset can be found on kaggle at <https://www.kaggle.com/uciml/student-alcohol-consumption?select=student-mat.csv>. It includes social, gender, and study information about students. 
+The data was obtained in a survey of students' math course in secondary school in Portugal. Called "Student Alcohol Consumption", the dataset can be found on kaggle at <https://www.kaggle.com/uciml/student-alcohol-consumption?select=student-mat.csv>. It includes social, gender, and study information about students.
 
-In the dataset, we will be dealing with both qualitative and quantitative variables. It contains a total of 395 observations with 33 predictors, containing no missing data. 
+In the dataset, we will be dealing with both qualitative and quantitative variables. It contains a total of 395 observations with 33 predictors, containing no missing data.
 
 ## An Overview of Your Research Question
 
-We are interested in predicting the number of times a student consumes alcohol every week. We want to figure out whether variables such as free time and parent's education status has an effect on the number of times a student drinks alcohol each week. Our response variable will be Dalc (Workday alcohol consumption) and Walc (Weekend alcohol consumption) added together to make Alc (Weekly alcohol consumption). 
+We are interested in predicting the number of times a student consumes alcohol every week. We want to figure out whether variables such as free time and parent's education status has an effect on the number of times a student drinks alcohol each week. Our response variable will be Dalc (Workday alcohol consumption) and Walc (Weekend alcohol consumption) added together to make Alc (Weekly alcohol consumption).
 
-We believe that the question would be best answered with a regression approach. Of these 33 predictors, we find that final grade, free time, absences, family's education support, study time, parent cohabitation status, parent's education, number of failed classes, quality of family relationship, and going out with friends will be useful for our prediction.
+We believe that the question would be best answered with a classification approach. Of these 33 predictors, we find that final grade, free time, absences, family's education support, study time, parent cohabitation status, parent's education, number of failed classes, quality of family relationship, and going out with friends will be useful for our prediction.
 
 # Comments
+
 Predict G1, G2, and G3
