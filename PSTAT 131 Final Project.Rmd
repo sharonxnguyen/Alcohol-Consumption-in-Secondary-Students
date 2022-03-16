@@ -135,7 +135,7 @@ str(data)
 
 # Data Split
 ```{r}
-set.seed(7)
+set.seed(123)
 num_samp <- 0.7 * nrow(data)
 
 t <- model.matrix(G3~., data) # use student_por or data?
@@ -152,33 +152,20 @@ y.test = data[-train, ]$G3
 train.indices <- sample(nrow(data), num_samp)
 train <- data[train.indices,]
 test <- data[-train.indices,]
-
-
-#Ytrain <- train$G3
-#Xtrain <- train %>% select(-grade) %>% scale(center=TRUE, scale=TRUE)
-
-#Ytest <- test$G3
-#Xtest <- test %>% select(-grade) %>% scale(center=TRUE, scale=TRUE)
-
-```
-
-##### Matt's pile of trash
-```{r}
-set.seed(123)
-
-# training classifier, predict on training set
-pred.Ytrain = knn(train=Xtrain, test=Xtrain, cl=Ytrain, k=2)
-
-#confusion matrix
-conf.train <- table(predicted=pred.Ytrain, true=Ytrain)
-conf.train
 ```
 
 
 
 
 # Exploratory Data Analysis
-```{r fig.height = 12, fig.width = 6}
+
+```{r}
+for(i in 1:14){
+ print(as.data.frame(table(data[,i])))
+}
+```
+
+```{r fig.height = 12, fig.width = 6, warning=FALSE}
 # for(i in colnames(data)){
 #  print(ggplot(data, aes(x=i)) + geom_histogram(fill='lightblue', stat="count"))
 # }
@@ -272,6 +259,8 @@ theme(
   guides(fill = guide_colorbar(barwidth = 7, barheight = 1,
                 title.position = "top", title.hjust = 0.5))
 ```
+
+
 # Decision Tree
 ```{r}
 # Entire Data Tree with chosen variables
@@ -305,24 +294,62 @@ sum(diag(error))/sum(error)
 # Test error rate (Classification Error)
 1-sum(diag(error))/sum(error)
 ```
-This approach leads to correct predictions for 92% of the locations in the test set. In other words, the test error rate is 8%. This is really equivalent to:
+This approach leads to correct predictions for 93% of the locations in the test set. In other words, the test error rate is 7%. This is really equivalent to:
 
 ```{r}
 mean(tree.pred != test$grade_2)
 ```
 
-
+# Pruning
+### k-fold Cross-validation
 ```{r}
-# Pruning 
-data.tree.cv <- cv.tree(data.tree, FUN = prune.misclass)
-data.tree.cv
+# set random see
+set.seed(123)
+
+# K-fold cross validation
+cv <- cv.tree(data.tree, FUN = prune.misclass, K=10)
+cv$size
+
+# Cross-validation error
+cv$dev
+
+# Best size
+# tree with 2 nodes is the lowest error
+best.cv = min(cv$size[cv$dev == min(cv$dev)])
+best.cv
 ```
 
+## Error vs. Best Size plot
+```{r}
+# Plot size vs. cross-validation error rate
+plot(cv$size , cv$dev, type="b",
+     xlab = "Number of leaves, \'best\'", ylab = "CV Misclassification Error",
+     col = "red", main="CV")
+abline(v=best.cv, lty=2)
+# Add lines to identify complexity parameter
+min.error = which.min(cv$dev) # Get minimum error index abline(h = cv$dev[min.error],lty = 2)
+```
+## Prune tree
+```{r}
+# Prune data.tree
+pt.cv = prune.misclass (data.tree, best=best.cv)
+
+# Plot pruned tree
+plot(pt.cv)
+text(pt.cv, pretty=0, col = "blue", cex = .5)
+draw.tree(pt.cv, nodeinfo=TRUE, cex = 0.5)
+title("Pruned tree of size 2")
+```
+
+
+
+
+
+# Random Forest
 ```{r}
 # Random Forest
-data.rf <- randomForest(grade ~., data = data, subset = train.indices, norm.votes = FALSE)
+data.rf <- randomForest(grade_2 ~ .-G3-grade, data = data, subset = train.indices, norm.votes = FALSE)
 print(data.rf)
-
 ```
 
 
