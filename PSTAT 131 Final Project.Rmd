@@ -3,9 +3,10 @@ title: 'PSTAT 131: Final Project'
 author: "Sharon Nguyen, Matt Lee, Paul Song"
 date: "3/8/2022"
 output:
-  pdf_document: default
-  html_document: default
-  code_folding: hide
+  html_document:
+      toc: true
+      theme: united
+      code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
@@ -21,6 +22,8 @@ library(ggplot2)
 library(class)
 library(FNN)
 library(gridExtra)
+library(grid)
+library(gt)
 ```
 
 # Alcohol Consumption in Secondary Students
@@ -31,13 +34,9 @@ library(gridExtra)
 
 # Introduction
 
-### By Sharon Nguyen, Matt Lee, Paul Song
-
-<https://www.studyineurope.eu/study-in-portugal/grades>
-
 By finding key variables that predict final grades of students within a Portuguese secondary school, we can learn the best ways to provide support for students academically.. We want to know where students are most affected by external factors so that we can further adjust our resources to the quickly changing societal needs. The variables we considered were based on our own opinions about possible influences to final grades.
 
-For example, Drinking alcohol on weekends is not an uncommon practice in European high school student, and the assumption is this has a negative correlation to students' grades. However, we are here to find out whether this is indeed the case.
+For example, Drinking alcohol on weekends is not an uncommon practice amongst European high school students, and the assumption is this has a negative correlation to students' grades. However, we are here to find out whether this is indeed the case.
 
 In our project, we decided to take a dataset containing numerous characteristics of students in a secondary (high) school in Porto, Portugal in an attempt to predict the final grade of students based on these attributes. We mixed and matched different characteristics to find significant or intriguing correlation between such characteristics.
 
@@ -51,7 +50,7 @@ Grades are heavily influenced by a lot of factors. When taking into account fina
 
 We chose to look at the data concerning students in a Portuguese class as it has a total of 649 observations.
 
-# Why might this model be useful?
+# 
 
 # Loading Data and Packages
 
@@ -119,9 +118,9 @@ data$health <- factor(data$health, ordered=TRUE, labels = c("very bad", "bad", "
 # data$G3 <- ordered(data$G3, levels = c(0:20))
 
 # 2 Binary Pass/No Pass
-data <- data %>% mutate(grade=ifelse(G3/20 >= 0.7, 1, 0))
+#data <- data %>% mutate(grade=ifelse(G3/20 >= 0.7, 1, 0))
 
-data <- data %>% mutate(grade_2=factor(ifelse(G3/20 >= 0.7, 'Pass', 'No Pass'),
+data <- data %>% mutate(grade=factor(ifelse(G3/20 >= 0.7, 'Pass', 'No Pass'),
                                        levels = c('No Pass', 'Pass')))
 
 str(data)
@@ -140,20 +139,22 @@ $$
 
 # Data Split
 
+We split the data by indexing for grade, the binary value after taking into account G2 and G3 results.
+
 ```{r}
 set.seed(123)
 num_samp <- 0.7 * nrow(data)
 
-t <- model.matrix(grade_2 ~ .-G3-grade, data) 
+t <- model.matrix(grade ~ .-G3, data)
 
 # 
 train = sample(nrow(t), num_samp)
 x.train = t[train, ]
-y.train = data[train, ]$grade_2
+y.train = data[train, ]$grade
 # 
 # # The rest as test data
 x.test = t[-train, ]
-y.test = data[-train, ]$grade_2
+y.test = data[-train, ]$grade
 
 
 train.indices <- sample(nrow(data), num_samp)
@@ -165,15 +166,14 @@ test <- data[-train.indices,]
 
 ```{r}
 for(i in 1:14){
- print(as.data.frame(table(data[,i])))
+ print(table(data[,i]))
 }
 ```
 
-```{r fig.height = 12, fig.width = 6}
+```{r fig.height = 12, fig.width = 6, warning=FALSE}
 plotlist <- list()
-for(i in 1:16){
- p <- ggplot(data, aes_string(x=data[,i])) + geom_histogram(fill='lightblue', stat="count") + 
-   xlab(colnames(data)[i])
+for(i in 1:15){
+ p <- ggplot(data, aes_string(x=data[,i])) + geom_histogram(fill='lightblue', stat="count") + xlab(colnames(data)[i])
  plotlist[[i]] <- p
 }
 grid.arrange(grobs=plotlist, ncol=2, top = "Histograms of All Data Variables")
@@ -183,7 +183,7 @@ grid.arrange(grobs=plotlist, ncol=2, top = "Histograms of All Data Variables")
 # correlation matrix
 cor_train <- train
 
-cor_train <- cor_train %>% select(absences, G2, G3)
+cor_train <- cor_train %>% select(absences, G3, G2)
 cormat <- round(cor(cor_train), 2) 
 melted_cormat <- melt(cormat)
 ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + 
@@ -254,14 +254,14 @@ From the heat map, we can see absences and final grade (G3) have low correlation
 
 ```{r}
 # Entire Data Tree with chosen variables
-dat.tree <- tree(grade_2 ~ .-G3-grade, data = data)
+dat.tree <- tree(grade~ .-G3, data = data)
 summary(dat.tree)
 draw.tree(dat.tree, nodeinfo=TRUE, cex = 0.5)
 title("Classification Tree Built on All Data Set")
 ```
 
 ```{r}
-data.tree <- tree(grade_2 ~ .-G3-grade, data = data, subset = train.indices)
+data.tree <- tree(grade~ .-G3, data = data, subset = train.indices)
 summary(data.tree)
 
 # length(which(train$grade == 0))
@@ -274,7 +274,7 @@ title("Classification Tree Built on Training Set")
 tree.pred <- predict(data.tree, test, type="class")
 
 # Obtain confusion matrix
-error = table(tree.pred, test$grade_2)
+error = table(tree.pred, test$grade)
 error
 
 # Test accuracy rate
@@ -287,7 +287,7 @@ sum(diag(error))/sum(error)
 This approach leads to correct predictions for 93% of the locations in the test set. In other words, the test error rate is 7%. This is really equivalent to:
 
 ```{r}
-mean(tree.pred != test$grade_2)
+mean(tree.pred != test$grade)
 ```
 
 # Pruning
@@ -340,7 +340,7 @@ title("Pruned tree of size 2")
 ```{r}
 # Predict on test set
 pred.pt.cv = predict(pt.cv, test, type="class") # Obtain confusion matrix
-err.pt.cv = table(pred.pt.cv, test$grade_2)
+err.pt.cv = table(pred.pt.cv, test$grade)
 err.pt.cv
 
  # Test accuracy rate
@@ -356,7 +356,7 @@ The test error rate for pt.cv is 7%, which is identical to the test error rate f
 
 ```{r}
 # Random Forest
-data.rf <- randomForest(grade_2 ~ .-G3-grade, data = data, subset = train.indices, norm.votes = FALSE)
+data.rf <- randomForest(grade ~ .-G3, data = data, subset = train.indices, norm.votes = FALSE)
 print(data.rf)
 
 plot(data.rf, main='Random Forest Model')
@@ -365,7 +365,7 @@ plot(data.rf, main='Random Forest Model')
 yhat.rf <- predict(data.rf, newdata=test)
 
 # confusion matrix
-rf.err <- table(pred = yhat.rf, truth=test$grade_2)
+rf.err <- table(pred = yhat.rf, truth=test$grade)
 test.rf.err <- 1 - sum(diag(rf.err))/sum(rf.err)
 test.rf.err # 0.07692308
 
@@ -432,18 +432,12 @@ We see that our testing error rate is higher then our training error rate.
 
 # Conclusion
 
-# Reference
+In conclusion, after running different classification algorithms to predict `grade`, we were only able to accurately use G2 as a predictor for final grades. 
+
+# not useful in predicting final grade,  
+
+# References
 
 [\<https://www.studyineurope.eu/study-in-portugal/grades>](https://www.studyineurope.eu/study-in-portugal/grades){.uri}
 
-## An Overview of Your Dataset
-
-The data was obtained in a survey of students' math course in secondary school in Portugal. Called "Student Alcohol Consumption", the dataset can be found on kaggle at <https://www.kaggle.com/uciml/student-alcohol-consumption?select=student-mat.csv>. It includes social, gender, and study information about students.
-
-In the dataset, we will be dealing with both qualitative and quantitative variables. It contains a total of 395 observations with 33 predictors, containing no missing data.
-
-## An Overview of Your Research Question
-
-We are interested in predicting the number of times a student consumes alcohol every week. We want to figure out whether variables such as free time and parent's education status has an effect on the number of times a student drinks alcohol each week. Our response variable will be Dalc (Workday alcohol consumption) and Walc (Weekend alcohol consumption) added together to make Alc (Weekly alcohol consumption).
-
-We believe that the question would be best answered with a classification approach. Of these 33 predictors, we find that final grade, free time, absences, family's education support, study time, parent cohabitation status, parent's education, number of failed classes, quality of family relationship, and going out with friends will be useful for our prediction.
+[\<https://www.kaggle.com/uciml/student-alcohol-consumption?select=student-mat.csv>](https://www.kaggle.com/uciml/student-alcohol-consumption?select=student-mat.csv){.uri}.
