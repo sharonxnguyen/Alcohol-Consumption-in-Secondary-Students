@@ -141,7 +141,7 @@ $$\text{grade} = \left\{
 \right. 
 $$
 
-Here we wanna order the data because a lot of the variables are ordinal data. If we do not do this than the models will not interpret out data correctly.
+Here we wanna order the data because a lot of the variables are ordinal data. If we do not do this than the models will not interpret out data correctly. We looked at the grade value for Portuguese secondary school and determined what is equivalent to an American grade C and created the binary values.
 
 # Data Split
 
