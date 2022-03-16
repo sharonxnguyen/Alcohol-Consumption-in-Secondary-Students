@@ -145,16 +145,34 @@ We split the data by indexing for grade, the binary value after taking into acco
 set.seed(123)
 num_samp <- 0.7 * nrow(data)
 
-t <- model.matrix(grade ~ .-G3, data)
+# t <- model.matrix(grade ~ .-G3, data)
+# 
+# #
+# train = sample(nrow(t), num_samp)
+# x.train = t[train, ]
+# y.train = data[train, ]$grade
+# #
+# # # The rest as test data
+# x.test = t[-train, ]
+# y.test = data[-train, ]$grade
 
-# 
+student = data %>%
+   select(absences, G2, grade)
+
+# Sample 70% observations as training data
 train = sample(nrow(t), num_samp)
-x.train = t[train, ]
-y.train = data[train, ]$grade
-# 
-# # The rest as test data
-x.test = t[-train, ]
-y.test = data[-train, ]$grade
+data.train = student[train,]
+# The rest 30% as test data
+data.test = student[-train,]
+
+# YTrain is the true labels for grade on the training set
+# XTrain is the standardized design matrix
+y.train = data.train$grade
+x.train = data.train %>% select(-grade)
+
+# YTest is the true labels for grade on the test set, Xtest is the design matrix
+y.test = data.test$grade
+x.test = data.test %>% select(-grade)
 
 
 train.indices <- sample(nrow(data), num_samp)
@@ -375,7 +393,7 @@ varImpPlot(data.rf)
 varImpPlot(data.rf, sort=T, main='Predictor Importance for Random Forest Model')
 ```
 
-# K Nearest Neighbors
+# K Nearest Neighbors (KNN)
 
 ```{r}
 # KNN
@@ -398,9 +416,19 @@ conf.test
 
 # testing error rate
 1 - sum(diag(conf.test)/sum(conf.test)) 
+
+# data.plot.k5 <- data.frame(Sales = sales.test$Sales,
+#                            Price = sales.test$Price,
+#                            Pred = pred.YTest.k5$pred)
+# 
+# # black dots represent the actual data points in test set
+# # red line represents the 2-nn prediction
+# data.plot.k5 %>% ggplot(aes(x=Price, y=Sales)) + geom_point() +
+#     geom_line(aes(x = Price, y=Pred, color="red")) + theme(legend.position = "none") +
+#   ggtitle("k = 5")
 ```
 
-After training the classifier our predictions on the training set led to a training error rate of 7.49%. Afterwards, we trained the classifier and made predictions on the test set, resulting in a testing error rate equal to 8.71%. We then decided to increase our k and see if it would alter the training error rate and test error rate.
+After training the classifier our predictions on the training set led to a training error rate of 7.49%. Afterwards, we trained the classifier and made predictions on the test set, resulting in a testing error rate equal to 6.15%. We then decided to increase our k and see if it would alter the training error rate and test error rate.
 
 ```{r}
 set.seed(123)
@@ -424,17 +452,17 @@ conf.test
 
 ```
 
-Similar to the initial K-Nearest-Neighbors approach, after training the classifier, our predictions on the training set led to a 7.71%% training error rate and a testing error rate of 8.71%. Our training error rate increased by .22% and our testing error rate remained the same.
+Similar to the initial K-Nearest-Neighbors approach, after training the classifier, our predictions on the training set led to a 8.81%% training error rate and a testing error rate of 7.71%. Our training error rate increased by 1.32% and our testing error rate remained the same.
 
-We see that our testing error rate is higher then our training error rate.
+<!-- We see that our testing error rate is higher then our training error rate. -->
 
 # Analysis of the Test Set
 
 # Conclusion
 
-In conclusion, after running different classification algorithms to predict `grade`, we were only able to accurately use G2 as a predictor for final grades. 
+In conclusion, after running different classification algorithms to predict `grade`, we were only able to accurately use G2 as a predictor for final grades.
 
-# not useful in predicting final grade,  
+# not useful in predicting final grade,
 
 # References
 
