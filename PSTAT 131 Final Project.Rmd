@@ -34,7 +34,7 @@ library(gt)
 
 For this project our group aimed to predict the grades of students from a Portuguese secondary school from a dataset containing a number of variables that were obtained from a survey. We first analyzed each variable and considered them by objective importance. After looking through each predictor we found it best to order the data rather than keep it in its original form. The way the dataset accounted for grades was redundant so our group decided to render the variable to binary values. We thought it best to use histograms in visualizing the relationship of the predictors. The classification methods that we saw best fit were our Decision Tree, Random Forest, and K-Nearest-Neighbors in predicting final grade.
 
-Data layout and reformatting was crucial to our project. Without it, a lot of the classification methods would not run correctly or at all. We found that the organizational method of the data is what made it difficult to process for our algorithms. If the data were not so ordinal and grouped together in categorical ways, we would have a better understanding and have more information at our disposal.
+Data layout and reformatting was crucial to our project. Without it, a lot of the classification methods would not run correctly or at all. We found that the organizational method of the data is what made it difficult to process for our algorithms. If the data were not so ordinal and grouped together in categorical ways, we would have a better understanding and more information at our disposal.
 
 # Introduction
 
@@ -162,7 +162,7 @@ student = data %>%
    select(absences, G2, grade)
 
 # Sample 70% observations as training data
-train = sample(nrow(t), num_samp)
+train = sample(nrow(data), num_samp)
 data.train = student[train,]
 # The rest 30% as test data
 data.test = student[-train,]
@@ -272,6 +272,8 @@ From the heat map, we can see absences and final grade (G3) have low correlation
 
 # Decision Tree
 
+First we plot our decision tree with all the data. Afterwards we will plot a decision tree with the training data to compare.
+
 ```{r}
 # Entire Data Tree with chosen variables
 dat.tree <- tree(grade~ .-G3, data = data)
@@ -374,6 +376,8 @@ The test error rate for pt.cv is 7%, which is identical to the test error rate f
 
 # Random Forest
 
+Here we ran a Random Forest to improve our model and to see if our test error rate will decrease.
+
 ```{r}
 # Random Forest
 data.rf <- randomForest(grade ~ .-G3, data = data, subset = train.indices, norm.votes = FALSE)
@@ -390,7 +394,7 @@ test.rf.err <- 1 - sum(diag(rf.err))/sum(rf.err)
 test.rf.err 
 ```
 
-Our test error rate is 7.18%
+Our test error rate is 7.18%. The test error rate is seeming to follow the test error rate we had from our previous models.
 
 ```{r}
 # list of important variables based on Mean Decrease Gini
@@ -465,8 +469,6 @@ conf.test
 Similar to the initial K-Nearest-Neighbors approach, after training the classifier, our predictions on the training set led to a 8.81%% training error rate and a testing error rate of 7.71%. Our training error rate increased by 1.32% and our testing error rate remained the same.
 
 <!-- We see that our testing error rate is higher then our training error rate. -->
-
-# Analysis of the Test Set
 
 # Conclusion
 
