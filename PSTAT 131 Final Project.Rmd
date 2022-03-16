@@ -32,6 +32,10 @@ library(gt)
 
 # Abstract
 
+For this project our group aimed to predict the grades of students from a Portuguese secondary school from a dataset containing a number of variables that were obtained from a survey. We first analyzed each variable and considered them by objective importance. After looking through each predictor we found it best to order the data rather than keep it in its original form. The way the dataset accounted for grades was redundant so our group decided to render the variable to binary values. We thought it best to use histograms in visualizing the relationship of the predictors. The classification methods that we saw best fit were our Decision Tree, Random Forest, and K-Nearest-Neighbors in predicting final grade.
+
+Data layout and reformatting was crucial to our project. Without it, a lot of the classification methods would not run correctly or at all. We found that the organizational method of the data is what made it difficult to process for our algorithms. If the data were not so ordinal and grouped together in categorical ways, we would have a better understanding and have more information at our disposal.
+
 # Introduction
 
 By finding key variables that predict final grades of students within a Portuguese secondary school, we can learn the best ways to provide support for students academically.. We want to know where students are most affected by external factors so that we can further adjust our resources to the quickly changing societal needs. The variables we considered were based on our own opinions about possible influences to final grades.
@@ -40,7 +44,7 @@ For example, Drinking alcohol on weekends is not an uncommon practice amongst Eu
 
 In our project, we decided to take a dataset containing numerous characteristics of students in a secondary (high) school in Porto, Portugal in an attempt to predict the final grade of students based on these attributes. We mixed and matched different characteristics to find significant or intriguing correlation between such characteristics.
 
-As a group, we've decided to go with the classification route; hence, using a decision tree, random forest, and KNN. We converted the type of our original dataset containing numeric variables to binary (Pass/No Pass) and ordered data.
+As a group, we've decided to go with the classification route; hence, using a decision tree, random forest, and K-Nearest-Neighbors. We converted the type of our original dataset containing numeric variables to binary (Pass/No Pass) and ordered data.
 
 # Why we chose this data
 
@@ -49,8 +53,6 @@ We chose this particular dataset because as college students, final grades matte
 Grades are heavily influenced by a lot of factors. When taking into account final grades, many factors come into play. Did the student have access to internet? How long does it take for the student to get to school? Does the student have a lot of free time on their hands? Or even, did the student spend too much time consuming alcohol? Utilizing the dataset from UCI Machine Learning, our group is attempting to see the significance that certain variables have in predicting a student's final grade.
 
 We chose to look at the data concerning students in a Portuguese class as it has a total of 649 observations.
-
-# 
 
 # Loading Data and Packages
 
@@ -123,7 +125,7 @@ data$health <- factor(data$health, ordered=TRUE, labels = c("very bad", "bad", "
 data <- data %>% mutate(grade=factor(ifelse(G3/20 >= 0.7, 'Pass', 'No Pass'),
                                        levels = c('No Pass', 'Pass')))
 
-str(data)
+
 
 # view strucutre
 str(data)
@@ -139,7 +141,7 @@ $$
 
 # Data Split
 
-We split the data by indexing for grade, the binary value after taking into account G2 and G3 results.
+We split the data by 70% training and 30% test.
 
 ```{r}
 set.seed(123)
@@ -385,13 +387,21 @@ yhat.rf <- predict(data.rf, newdata=test)
 # confusion matrix
 rf.err <- table(pred = yhat.rf, truth=test$grade)
 test.rf.err <- 1 - sum(diag(rf.err))/sum(rf.err)
-test.rf.err # 0.07692308
+test.rf.err 
+```
 
+Our test error rate is 7.18%
+
+```{r}
+# list of important variables based on Mean Decrease Gini
 importance(data.rf)
 
-varImpPlot(data.rf)
+# plot of important variables
 varImpPlot(data.rf, sort=T, main='Predictor Importance for Random Forest Model')
+
 ```
+
+We see within our plot that G2 has the highest importance in predicting for final grades.
 
 # K Nearest Neighbors (KNN)
 
@@ -460,9 +470,9 @@ Similar to the initial K-Nearest-Neighbors approach, after training the classifi
 
 # Conclusion
 
-In conclusion, after running different classification algorithms to predict `grade`, we were only able to accurately use G2 as a predictor for final grades.
+In conclusion, after running different classification algorithms to predict `grade`, we were only able to accurately use G2 as a predictor for final grades. By cleaning out unecessary variables within the dataset, we were able to make substantial statistical models. Utilizing a heatmap was a good indicator to combine our G2 and G3 as they were shown to have correlation. Altering our grade value to becoming binary helped with the classification methods in keeping our training error rate and test error rate to stay around 7 - 8%. The UCI Machine Learning database deleted the dataset due to the lack of information and difficulty in statistical modeling.
 
-# not useful in predicting final grade,
+Due to the dataset containing a lot of ordinal values within each predictor, it was difficult calculating accurate classification models.
 
 # References
 
