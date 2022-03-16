@@ -3,10 +3,12 @@ title: 'PSTAT 131: Final Project'
 author: "Sharon Nguyen, Matt Lee, Paul Song"
 date: "3/8/2022"
 output:
+  pdf_document:
+    toc: yes
   html_document:
-      toc: true
-      theme: united
-      code_folding: hide
+    toc: yes
+    theme: united
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
@@ -139,6 +141,8 @@ $$\text{grade} = \left\{
 \right. 
 $$
 
+Here we wanna order the data because a lot of the variables are ordinal data. If we do not do this than the models will not interpret out data correctly.
+
 # Data Split
 
 We split the data by 70% training and 30% test.
@@ -189,6 +193,8 @@ for(i in 1:14){
  print(table(data[,i]))
 }
 ```
+
+We have a lot of categorical data so making tables was the best way to show the frequency of data among the variables since there is also ordinal data. Afterwards to show the distribution we used histograms.
 
 ```{r fig.height = 12, fig.width = 6, warning=FALSE}
 plotlist <- list()
@@ -431,14 +437,14 @@ conf.test
 # testing error rate
 1 - sum(diag(conf.test)/sum(conf.test)) 
 
-# data.plot.k5 <- data.frame(Sales = sales.test$Sales,
-#                            Price = sales.test$Price,
-#                            Pred = pred.YTest.k5$pred)
+# data.plot.k5 <- data.frame(grade = data.test$grade,
+#                            G2 = data.test$G2,
+#                            Pred = pred.ytest)
 # 
 # # black dots represent the actual data points in test set
 # # red line represents the 2-nn prediction
-# data.plot.k5 %>% ggplot(aes(x=Price, y=Sales)) + geom_point() +
-#     geom_line(aes(x = Price, y=Pred, color="red")) + theme(legend.position = "none") +
+# data.plot.k5 %>% ggplot(aes(x=G2, y=grade)) + geom_point() +
+#     geom_line(aes(x = G2, y=Pred, color="red")) + theme(legend.position = "none") +
 #   ggtitle("k = 5")
 ```
 
